@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { MCPServerConfig ,
+import type {
+  MCPServerConfig,
   ApprovalMode,
   Config,
   type FileFilteringOptions,

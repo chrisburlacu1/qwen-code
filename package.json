@@ -1,6 +1,6 @@
 {
   "name": "@qwen-code/qwen-code-ollama",
-  "version": "0.4.0-ollama",
+  "version": "0.4.1",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -64,7 +64,7 @@
     }
   },
   "bin": {
-    "qwen-ollama": "dist/cli.js"
+    "sosh": "dist/cli.js"
   },
   "files": [
     "dist/",

@@ -1,7 +1,7 @@
 {
   "name": "@qwen-code/qwen-code",
-  "version": "0.4.0",
-  "description": "Qwen Code",
+  "version": "0.4.1",
+  "description": "sosh",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chrisburlacu1/qwen-code.git"
@@ -10,7 +10,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "qwen-ollama": "dist/index.js"
+    "sosh": "dist/index.js"
   },
   "exports": {
     ".": {

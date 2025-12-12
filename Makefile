@@ -1,6 +1,6 @@
 # Makefile for gemini-cli
 
-.PHONY: help install build build-sandbox build-all test lint format preflight clean start debug release run-npx create-alias
+.PHONY: help install build build-sandbox build-all test lint format preflight clean start debug release run-npx create-alias package-vscode
 
 help:
 	@echo "Makefile for gemini-cli"
@@ -19,6 +19,7 @@ help:
 	@echo ""
 	@echo "  make run-npx          - Run the CLI using npx (for testing the published package)"
 	@echo "  make create-alias     - Create a 'gemini' alias for your shell"
+	@echo "  make package-vscode   - Package the VS Code extension into a .vsix file"
 
 install:
 	npm install
@@ -57,3 +58,6 @@ run-npx:
 
 create-alias:
 	scripts/create_alias.sh
+
+package-vscode:
+	npm run package --workspace=packages/vscode-ide-companion

@@ -1,13 +1,13 @@
 {
-  "name": "qwen-ollama-vscode-ide-companion",
-  "displayName": "Qwen Ollama Companion",
-  "description": "Enable Qwen Ollama with direct access to your VS Code workspace.",
-  "version": "0.4.0",
+  "name": "sosh-vscode-ide-companion",
+  "displayName": "Sosh Companion",
+  "description": "Enable Sosh with direct access to your VS Code workspace.",
+  "version": "0.4.1",
   "publisher": "qwenlm",
   "icon": "assets/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/QwenLM/qwen-code.git",
+    "url": "https://github.com/chrisburlacu1/qwen-code.git",
     "directory": "packages/vscode-ide-companion"
   },
   "engines": {
