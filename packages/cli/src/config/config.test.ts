@@ -535,7 +535,6 @@ describe('loadCliConfig', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -555,7 +554,6 @@ describe('loadCliConfig', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getShowMemoryUsage()).toBe(true);
@@ -572,7 +570,6 @@ describe('loadCliConfig', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getShowMemoryUsage()).toBe(false);
@@ -589,7 +586,6 @@ describe('loadCliConfig', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getShowMemoryUsage()).toBe(false);
@@ -606,7 +602,6 @@ describe('loadCliConfig', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getShowMemoryUsage()).toBe(true);
@@ -649,7 +644,6 @@ describe('loadCliConfig', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
         argv,
       );
       expect(config.getProxy()).toBeFalsy();
@@ -699,7 +693,6 @@ describe('loadCliConfig', () => {
             ExtensionStorage.getUserExtensionsDir(),
             argv.extensions,
           ),
-          'test-session',
           argv,
         );
         expect(config.getProxy()).toBe(expected);
@@ -717,7 +710,6 @@ describe('loadCliConfig', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
         argv,
       );
       expect(config.getProxy()).toBe('http://localhost:7890');
@@ -735,195 +727,11 @@ describe('loadCliConfig', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
         argv,
       );
       expect(config.getProxy()).toBe('http://localhost:7890');
     });
   });
-});
-
-it('should use telemetry OTLP endpoint from settings if CLI flag is not present', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = {
-    telemetry: { otlpEndpoint: 'http://settings.example.com' },
-  };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpEndpoint()).toBe('http://settings.example.com');
-});
-
-it('should prioritize --telemetry-otlp-endpoint CLI flag over settings', async () => {
-  process.argv = [
-    'node',
-    'script.js',
-    '--telemetry-otlp-endpoint',
-    'http://cli.example.com',
-  ];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = {
-    telemetry: { otlpEndpoint: 'http://settings.example.com' },
-  };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpEndpoint()).toBe('http://cli.example.com');
-});
-
-it('should use default endpoint if no OTLP endpoint is provided via CLI or settings', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { enabled: true } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpEndpoint()).toBe('http://localhost:4317');
-});
-
-it('should use telemetry log prompts from settings if CLI flag is not present', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { logPrompts: false } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
-});
-
-it('should prioritize --telemetry-log-prompts CLI flag (true) over settings (false)', async () => {
-  process.argv = ['node', 'script.js', '--telemetry-log-prompts'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { logPrompts: false } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
-});
-
-it('should prioritize --no-telemetry-log-prompts CLI flag (false) over settings (true)', async () => {
-  process.argv = ['node', 'script.js', '--no-telemetry-log-prompts'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { logPrompts: true } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
-});
-
-it('should use default log prompts (true) if no value is provided via CLI or settings', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { enabled: true } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
-});
-
-it('should use telemetry OTLP protocol from settings if CLI flag is not present', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = {
-    telemetry: { otlpProtocol: 'http' },
-  };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpProtocol()).toBe('http');
-});
-
-it('should prioritize --telemetry-otlp-protocol CLI flag over settings', async () => {
-  process.argv = ['node', 'script.js', '--telemetry-otlp-protocol', 'http'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = {
-    telemetry: { otlpProtocol: 'grpc' },
-  };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpProtocol()).toBe('http');
-});
-
-it('should use default protocol if no OTLP protocol is provided via CLI or settings', async () => {
-  process.argv = ['node', 'script.js'];
-  const argv = await parseArguments({} as Settings);
-  const settings: Settings = { telemetry: { enabled: true } };
-  const config = await loadCliConfig(
-    settings,
-    [],
-    new ExtensionEnablementManager(
-      ExtensionStorage.getUserExtensionsDir(),
-      argv.extensions,
-    ),
-    'test-session',
-    argv,
-  );
-  expect(config.getTelemetryOtlpProtocol()).toBe('grpc');
 });
 
 it('should reject invalid --telemetry-otlp-protocol values', async () => {
@@ -996,12 +804,10 @@ describe('Hierarchical Memory Loading (config.ts) - Placeholder Suite', () => {
     await loadCliConfig(
       settings,
       extensions,
-
       new ExtensionEnablementManager(
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'session-id',
       argv,
     );
     expect(ServerConfig.loadServerHierarchicalMemory).toHaveBeenCalledWith(
@@ -1082,7 +888,6 @@ describe('mergeMcpServers', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(settings).toEqual(originalSettings);
@@ -1132,7 +937,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(
@@ -1163,7 +967,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(
@@ -1203,7 +1006,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(
@@ -1225,7 +1027,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual([]);
@@ -1244,7 +1045,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(defaultExcludes);
@@ -1262,7 +1062,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(
@@ -1293,7 +1092,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toEqual(
@@ -1325,7 +1123,6 @@ describe('mergeExcludeTools', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(settings).toEqual(originalSettings);
@@ -1357,7 +1154,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1387,7 +1183,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1417,7 +1212,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1447,7 +1241,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1477,7 +1270,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1500,7 +1292,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1535,7 +1326,7 @@ describe('Approval mode tool exclusion logic', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
 
@@ -1566,7 +1357,6 @@ describe('Approval mode tool exclusion logic', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1596,7 +1386,7 @@ describe('Approval mode tool exclusion logic', () => {
           ExtensionStorage.getUserExtensionsDir(),
           invalidArgv.extensions,
         ),
-        'test-session',
+
         invalidArgv as CliArgs,
       ),
     ).rejects.toThrow(
@@ -1638,7 +1428,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual(baseSettings.mcpServers);
@@ -1659,7 +1448,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1684,7 +1472,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1710,7 +1497,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1728,7 +1514,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({});
@@ -1748,7 +1533,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1771,7 +1555,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1796,7 +1579,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1826,7 +1608,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1858,7 +1639,6 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getMcpServers()).toEqual({
@@ -1893,7 +1673,6 @@ describe('loadCliConfig extensions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExtensionContextFilePaths()).toEqual([
@@ -1913,7 +1692,6 @@ describe('loadCliConfig extensions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExtensionContextFilePaths()).toEqual(['/path/to/ext1.md']);
@@ -1935,7 +1713,6 @@ describe('loadCliConfig model selection', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1954,7 +1731,6 @@ describe('loadCliConfig model selection', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1975,7 +1751,6 @@ describe('loadCliConfig model selection', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -1994,7 +1769,6 @@ describe('loadCliConfig model selection', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
 
@@ -2034,7 +1808,6 @@ describe('loadCliConfig folderTrust', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getFolderTrust()).toBe(false);
@@ -2057,7 +1830,6 @@ describe('loadCliConfig folderTrust', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getFolderTrust()).toBe(true);
@@ -2074,7 +1846,6 @@ describe('loadCliConfig folderTrust', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getFolderTrust()).toBe(false);
@@ -2124,7 +1895,6 @@ describe('loadCliConfig with includeDirectories', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     const expected = [
@@ -2176,7 +1946,6 @@ describe('loadCliConfig chatCompression', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getChatCompression()).toEqual({
@@ -2195,7 +1964,6 @@ describe('loadCliConfig chatCompression', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getChatCompression()).toBeUndefined();
@@ -2228,7 +1996,6 @@ describe('loadCliConfig useRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseRipgrep()).toBe(true);
@@ -2245,7 +2012,6 @@ describe('loadCliConfig useRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseRipgrep()).toBe(false);
@@ -2262,7 +2028,6 @@ describe('loadCliConfig useRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseRipgrep()).toBe(true);
@@ -2295,7 +2060,6 @@ describe('loadCliConfig useBuiltinRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseBuiltinRipgrep()).toBe(true);
@@ -2312,7 +2076,6 @@ describe('loadCliConfig useBuiltinRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseBuiltinRipgrep()).toBe(false);
@@ -2329,7 +2092,6 @@ describe('loadCliConfig useBuiltinRipgrep', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getUseBuiltinRipgrep()).toBe(true);
@@ -2364,7 +2126,6 @@ describe('screenReader configuration', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getScreenReader()).toBe(true);
@@ -2383,7 +2144,6 @@ describe('screenReader configuration', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getScreenReader()).toBe(false);
@@ -2402,7 +2162,6 @@ describe('screenReader configuration', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getScreenReader()).toBe(true);
@@ -2419,7 +2178,6 @@ describe('screenReader configuration', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getScreenReader()).toBe(false);
@@ -2456,7 +2214,6 @@ describe('loadCliConfig tool exclusions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).not.toContain('run_shell_command');
@@ -2475,7 +2232,6 @@ describe('loadCliConfig tool exclusions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).not.toContain('run_shell_command');
@@ -2494,7 +2250,6 @@ describe('loadCliConfig tool exclusions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).toContain('run_shell_command');
@@ -2513,7 +2268,6 @@ describe('loadCliConfig tool exclusions', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getExcludeTools()).not.toContain('run_shell_command');
@@ -2551,7 +2305,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(true);
@@ -2568,7 +2321,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(true);
@@ -2585,7 +2337,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(false);
@@ -2602,7 +2353,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(false);
@@ -2619,7 +2369,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(false);
@@ -2643,7 +2392,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(false);
@@ -2663,7 +2411,6 @@ describe('loadCliConfig interactive', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.isInteractive()).toBe(true);
@@ -2697,7 +2444,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2713,7 +2459,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.PLAN);
@@ -2729,7 +2474,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.YOLO);
@@ -2745,7 +2489,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.YOLO);
@@ -2761,7 +2504,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2777,7 +2519,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.AUTO_EDIT);
@@ -2793,7 +2534,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.YOLO);
@@ -2810,7 +2550,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.PLAN);
@@ -2827,7 +2566,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.AUTO_EDIT);
@@ -2845,7 +2583,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       ),
     ).rejects.toThrow(
@@ -2867,7 +2605,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2883,7 +2620,6 @@ describe('loadCliConfig approval mode', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.YOLO);
@@ -2908,7 +2644,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2924,7 +2660,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2940,7 +2676,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2956,7 +2692,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.DEFAULT);
@@ -2972,7 +2708,7 @@ describe('loadCliConfig approval mode', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(config.getApprovalMode()).toBe(ServerConfig.ApprovalMode.PLAN);
@@ -3059,7 +2795,7 @@ describe('loadCliConfig fileFiltering', () => {
           ExtensionStorage.getUserExtensionsDir(),
           argv.extensions,
         ),
-        'test-session',
+
         argv,
       );
       expect(getter(config)).toBe(value);
@@ -3078,7 +2814,6 @@ describe('Output format', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getOutputFormat()).toBe(OutputFormat.TEXT);
@@ -3094,7 +2829,6 @@ describe('Output format', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getOutputFormat()).toBe(OutputFormat.JSON);
@@ -3110,7 +2844,6 @@ describe('Output format', () => {
         ExtensionStorage.getUserExtensionsDir(),
         argv.extensions,
       ),
-      'test-session',
       argv,
     );
     expect(config.getOutputFormat()).toBe(OutputFormat.JSON);
@@ -3187,264 +2920,5 @@ describe('parseArguments with positional prompt', () => {
     process.argv = ['node', 'script.js', '--prompt', 'test prompt'];
     const argv = await parseArguments({} as Settings);
     expect(argv.prompt).toBe('test prompt');
-  });
-});
-
-describe('Telemetry configuration via environment variables', () => {
-  it('should not prioritize GEMINI_TELEMETRY_ENABLED over settings and default to false', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_ENABLED', 'true');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { enabled: false } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryEnabled()).toBe(false);
-  });
-
-  it('should prioritize GEMINI_TELEMETRY_TARGET over settings', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_TARGET', 'gcp');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { target: 'local' } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryTarget()).toBe('gcp');
-  });
-
-  it('should throw when GEMINI_TELEMETRY_TARGET is invalid', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_TARGET', 'bogus');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { target: 'gcp' } };
-    await expect(
-      loadCliConfig(
-        settings,
-        [],
-        new ExtensionEnablementManager(
-          ExtensionStorage.getUserExtensionsDir(),
-          argv.extensions,
-        ),
-        'test-session',
-        argv,
-      ),
-    ).rejects.toThrow(
-      /Invalid telemetry configuration: .*Invalid telemetry target/i,
-    );
-    vi.unstubAllEnvs();
-  });
-
-  it('should prioritize GEMINI_TELEMETRY_OTLP_ENDPOINT over settings and default env var', async () => {
-    vi.stubEnv('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://default.env.com');
-    vi.stubEnv('GEMINI_TELEMETRY_OTLP_ENDPOINT', 'http://gemini.env.com');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = {
-      telemetry: { otlpEndpoint: 'http://settings.com' },
-    };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryOtlpEndpoint()).toBe('http://gemini.env.com');
-  });
-
-  it('should prioritize GEMINI_TELEMETRY_OTLP_PROTOCOL over settings', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_OTLP_PROTOCOL', 'http');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { otlpProtocol: 'grpc' } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryOtlpProtocol()).toBe('http');
-  });
-
-  it('should prioritize GEMINI_TELEMETRY_LOG_PROMPTS over settings', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_LOG_PROMPTS', 'false');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { logPrompts: true } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
-  });
-
-  it('should prioritize GEMINI_TELEMETRY_OUTFILE over settings', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_OUTFILE', '/gemini/env/telemetry.log');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = {
-      telemetry: { outfile: '/settings/telemetry.log' },
-    };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryOutfile()).toBe('/gemini/env/telemetry.log');
-  });
-
-  it('should not prioritize GEMINI_TELEMETRY_USE_COLLECTOR over settings and default to false', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_USE_COLLECTOR', 'false');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { useCollector: false } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryUseCollector()).toBe(false);
-  });
-
-  it('should use settings value false when GEMINI_TELEMETRY_ENABLED is not set', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_ENABLED', undefined);
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { enabled: false } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryEnabled()).toBe(false);
-  });
-
-  it('should use settings value when GEMINI_TELEMETRY_TARGET is not set', async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_TARGET', undefined);
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const settings: Settings = { telemetry: { target: 'local' } };
-    const config = await loadCliConfig(
-      settings,
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryTarget()).toBe('local');
-  });
-
-  it("should treat GEMINI_TELEMETRY_ENABLED='1' as false", async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_ENABLED', '1');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const config = await loadCliConfig(
-      {},
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryEnabled()).toBe(false);
-  });
-
-  it("should treat GEMINI_TELEMETRY_ENABLED='0' as false", async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_ENABLED', '0');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const config = await loadCliConfig(
-      { telemetry: { enabled: true } },
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryEnabled()).toBe(false);
-  });
-
-  it("should treat GEMINI_TELEMETRY_LOG_PROMPTS='1' as true", async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_LOG_PROMPTS', '1');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const config = await loadCliConfig(
-      {},
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
-  });
-
-  it("should treat GEMINI_TELEMETRY_LOG_PROMPTS='false' as false", async () => {
-    vi.stubEnv('GEMINI_TELEMETRY_LOG_PROMPTS', 'false');
-    process.argv = ['node', 'script.js'];
-    const argv = await parseArguments({} as Settings);
-    const config = await loadCliConfig(
-      { telemetry: { logPrompts: true } },
-      [],
-      new ExtensionEnablementManager(
-        ExtensionStorage.getUserExtensionsDir(),
-        argv.extensions,
-      ),
-      'test-session',
-      argv,
-    );
-    expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
   });
 });

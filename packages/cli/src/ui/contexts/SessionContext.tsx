@@ -13,8 +13,6 @@ import {
   useMemo,
 } from 'react';
 
-import { sessionId } from '@qwen-code/qwen-code-core';
-
 export enum ToolCallDecision {
   ACCEPT = 'accept',
   REJECT = 'reject',
@@ -23,7 +21,7 @@ export enum ToolCallDecision {
 }
 
 export interface SessionStatsState {
-  sessionId: string;
+  sessionId?: string;
   sessionStartTime: Date;
   promptCount: number;
 }
@@ -48,7 +46,6 @@ export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [stats, setStats] = useState<SessionStatsState>({
-    sessionId,
     sessionStartTime: new Date(),
     promptCount: 0,
   });
@@ -68,6 +65,7 @@ export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = useMemo(
     () => ({
       stats,
+
       startNewPrompt,
       getPromptCount,
     }),

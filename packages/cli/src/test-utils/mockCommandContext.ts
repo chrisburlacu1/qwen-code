@@ -63,7 +63,9 @@ export const createMockCommandContext = (
     } as any,
     session: {
       sessionShellAllowlist: new Set<string>(),
+      startNewSession: vi.fn(),
       stats: {
+        sessionId: '',
         sessionStartTime: new Date(),
         promptCount: 0,
       } as SessionStatsState,

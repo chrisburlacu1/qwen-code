@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Mock } from 'vitest';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { clearCommand } from './clearCommand.js';
 import { type CommandContext } from './types.js';
@@ -15,9 +14,11 @@ import type { GeminiClient } from '@qwen-code/qwen-code-core';
 describe('clearCommand', () => {
   let mockContext: CommandContext;
   let mockResetChat: ReturnType<typeof vi.fn>;
+  let mockStartNewSession: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockResetChat = vi.fn().mockResolvedValue(undefined);
+    mockStartNewSession = vi.fn().mockReturnValue('new-session-id');
     vi.clearAllMocks();
 
     mockContext = createMockCommandContext({
@@ -28,6 +29,9 @@ describe('clearCommand', () => {
               resetChat: mockResetChat,
             }) as unknown as GeminiClient,
         },
+      },
+      session: {
+        startNewSession: vi.fn(),
       },
     });
   });
@@ -40,10 +44,14 @@ describe('clearCommand', () => {
     await clearCommand.action(mockContext, '');
 
     expect(mockContext.ui.setDebugMessage).toHaveBeenCalledWith(
-      'Clearing terminal and resetting chat.',
+      'Starting a new session, resetting chat, and clearing terminal.',
     );
     expect(mockContext.ui.setDebugMessage).toHaveBeenCalledTimes(1);
 
+    expect(mockStartNewSession).toHaveBeenCalledTimes(1);
+    expect(mockContext.session.startNewSession).toHaveBeenCalledWith(
+      'new-session-id',
+    );
     expect(mockResetChat).toHaveBeenCalledTimes(1);
     expect(mockContext.ui.clear).toHaveBeenCalledTimes(1);
 
@@ -67,12 +75,15 @@ describe('clearCommand', () => {
       services: {
         config: null,
       },
+      session: {
+        startNewSession: vi.fn(),
+      },
     });
 
     await clearCommand.action(nullConfigContext, '');
 
     expect(nullConfigContext.ui.setDebugMessage).toHaveBeenCalledWith(
-      'Clearing terminal.',
+      'Starting a new session and clearing.',
     );
     expect(mockResetChat).not.toHaveBeenCalled();
     expect(nullConfigContext.ui.clear).toHaveBeenCalledTimes(1);

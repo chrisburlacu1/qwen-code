@@ -16,6 +16,7 @@ import type {
   ToolConfirmationPayload,
   AnyDeclarativeTool,
   AnyToolInvocation,
+  ChatRecordingService,
 } from '../index.js';
 import {
   ToolConfirmationOutcome,
@@ -23,6 +24,7 @@ import {
   ReadFileTool,
   ToolErrorType,
   ShellTool,
+  InputFormat,
 } from '../index.js';
 import type { Part, PartListUnion } from '@google/genai';
 import { getResponseTextFromParts } from '../utils/generateContentResponseUtilities.js';
@@ -317,6 +319,10 @@ interface CoreToolSchedulerOptions {
   onToolCallsUpdate?: ToolCallsUpdateHandler;
   getPreferredEditor: () => EditorType | undefined;
   onEditorClose: () => void;
+  /**
+   * Optional recording service. If provided, tool results will be recorded.
+   */
+  chatRecordingService?: ChatRecordingService;
 }
 
 export class CoreToolScheduler {
@@ -328,6 +334,7 @@ export class CoreToolScheduler {
   private getPreferredEditor: () => EditorType | undefined;
   private config: Config;
   private onEditorClose: () => void;
+
   private isFinalizingToolCalls = false;
   private isScheduling = false;
   private requestQueue: Array<{
@@ -813,10 +820,10 @@ export class CoreToolScheduler {
             const shouldAutoDeny =
               !this.config.isInteractive() &&
               !this.config.getIdeMode() &&
-              !this.config.getExperimentalZedIntegration();
+              !this.config.getExperimentalZedIntegration() &&
+              this.config.getInputFormat() !== InputFormat.STREAM_JSON;
 
             if (shouldAutoDeny) {
-              // Treat as execution denied error, similar to excluded tools
               const errorMessage = `Qwen Code requires permission to use "${reqInfo.name}", but that permission was declined.`;
               this.setStatusInternal(
                 reqInfo.callId,
@@ -905,7 +912,10 @@ export class CoreToolScheduler {
 
   async handleConfirmationResponse(
     callId: string,
-    originalOnConfirm: (outcome: ToolConfirmationOutcome) => Promise<void>,
+    originalOnConfirm: (
+      outcome: ToolConfirmationOutcome,
+      payload?: ToolConfirmationPayload,
+    ) => Promise<void>,
     outcome: ToolConfirmationOutcome,
     signal: AbortSignal,
     payload?: ToolConfirmationPayload,
@@ -914,9 +924,7 @@ export class CoreToolScheduler {
       (c) => c.request.callId === callId && c.status === 'awaiting_approval',
     );
 
-    if (toolCall && toolCall.status === 'awaiting_approval') {
-      await originalOnConfirm(outcome);
-    }
+    await originalOnConfirm(outcome, payload);
 
     if (outcome === ToolConfirmationOutcome.ProceedAlways) {
       await this.autoApproveCompatiblePendingTools(signal, callId);
@@ -925,11 +933,10 @@ export class CoreToolScheduler {
     this.setToolCallOutcome(callId, outcome);
 
     if (outcome === ToolConfirmationOutcome.Cancel || signal.aborted) {
-      this.setStatusInternal(
-        callId,
-        'cancelled',
-        'User did not allow tool call',
-      );
+      // Use custom cancel message from payload if provided, otherwise use default
+      const cancelMessage =
+        payload?.cancelMessage || 'User did not allow tool call';
+      this.setStatusInternal(callId, 'cancelled', cancelMessage);
     } else if (outcome === ToolConfirmationOutcome.ModifyWithEditor) {
       const waitingToolCall = toolCall as WaitingToolCall;
       if (isModifiableDeclarativeTool(waitingToolCall.tool)) {
@@ -987,7 +994,8 @@ export class CoreToolScheduler {
   ): Promise<void> {
     if (
       toolCall.confirmationDetails.type !== 'edit' ||
-      !isModifiableDeclarativeTool(toolCall.tool)
+      !isModifiableDeclarativeTool(toolCall.tool) ||
+      !payload.newContent
     ) {
       return;
     }
