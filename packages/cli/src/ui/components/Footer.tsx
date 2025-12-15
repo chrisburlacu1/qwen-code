@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
     corgiMode: uiState.corgiMode,
     errorCount: uiState.errorCount,
     showErrorDetails: uiState.showErrorDetails,
-    promptTokenCount: 0,
+    promptTokenCount: uiState.lastPromptTokenCount ?? 0,
     nightly: uiState.nightly,
     isTrustedFolder: uiState.isTrustedFolder,
   };

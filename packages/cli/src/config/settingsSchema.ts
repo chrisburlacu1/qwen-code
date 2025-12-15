@@ -489,6 +489,16 @@ const SETTINGS_SCHEMA = {
         description: 'The Gemini model to use for conversations.',
         showInDialog: false,
       },
+      contextWindow: {
+        type: 'number',
+        label: 'Context Window',
+        category: 'Model',
+        requiresRestart: true,
+        default: undefined as number | undefined,
+        description:
+          'Override the context window token limit for the current model (e.g., 32768, 128000).',
+        showInDialog: true,
+      },
       maxSessionTurns: {
         type: 'number',
         label: 'Max Session Turns',

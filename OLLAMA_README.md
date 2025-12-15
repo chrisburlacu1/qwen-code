@@ -1,4 +1,4 @@
-# Qwen Code - Ollama Fork
+# Sosh - Qwen Code Fork
 
 This is a fork of [Qwen Code](https://github.com/QwenLM/qwen-code) specifically configured for **Ollama** and **offline/air-gapped environments**.
 

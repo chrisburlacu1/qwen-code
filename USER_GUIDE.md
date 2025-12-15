@@ -1,6 +1,6 @@
-# Qwen Code Offline Setup Guide
+# Sosh Offline Setup Guide
 
-This guide details how to set up and run Qwen Code in an offline, air-gapped environment.
+This guide details how to set up and run Sosh in an offline, air-gapped environment.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ The CLI is the core tool that runs in your terminal.
     ```cmd
     npm link
     ```
-    _Now you can run `qwen-code` from any terminal._
+    _Now you can run `sosh` from any terminal._
 
 ## 2. Build and Install the IDE Companion
 
@@ -50,7 +50,7 @@ The IDE Companion is a VS Code extension that allows the CLI to see your open fi
     npm run package
     ```
 
-    _This creates a file named something like `qwen-ollama-vscode-ide-companion-0.3.0.vsix`._
+    _This creates a file named something like `sosh-vscode-ide-companion-0.4.3.vsix`._
 
 4.  **Install in VS Code**:
     - Open VS Code.
@@ -64,10 +64,10 @@ The IDE Companion is a VS Code extension that allows the CLI to see your open fi
     ```cmd
     ollama serve
     ```
-2.  **Start Qwen Code**:
+2.  **Start Sosh**:
     - If you linked it globally:
       ```cmd
-      qwen-code
+      sosh
       ```
     - Or directly from the package:
       ```cmd

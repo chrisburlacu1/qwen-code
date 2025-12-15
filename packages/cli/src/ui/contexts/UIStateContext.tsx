@@ -135,6 +135,7 @@ export interface UIState {
   // Subagent dialogs
   isSubagentCreateDialogOpen: boolean;
   isAgentsManagerDialogOpen: boolean;
+  lastPromptTokenCount: number | undefined;
 }
 
 export const UIStateContext = createContext<UIState | null>(null);

@@ -633,6 +633,7 @@ export const AppContainer = (props: AppContainerProps) => {
     handleApprovalModeChange,
     activePtyId,
     loopDetectionConfirmationRequest,
+    lastPromptTokenCount,
   } = useGeminiStream(
     config.getGeminiClient(),
     historyManager.history,
@@ -1296,6 +1297,7 @@ export const AppContainer = (props: AppContainerProps) => {
       // Subagent dialogs
       isSubagentCreateDialogOpen,
       isAgentsManagerDialogOpen,
+      lastPromptTokenCount,
     }),
     [
       isThemeDialogOpen,
@@ -1388,6 +1390,7 @@ export const AppContainer = (props: AppContainerProps) => {
       // Subagent dialogs
       isSubagentCreateDialogOpen,
       isAgentsManagerDialogOpen,
+      lastPromptTokenCount,
     ],
   );
 

@@ -1,4 +1,4 @@
-# Qwen Code - Ollama Fork
+# Sosh
 
 <div align="center">
 

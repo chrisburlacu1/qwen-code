@@ -29,7 +29,7 @@ import type { ConfirmationRequest } from '../ui/types.js';
 
 export const EXTENSIONS_DIRECTORY_NAME = path.join(QWEN_DIR, 'extensions');
 
-export const EXTENSIONS_CONFIG_FILENAME = 'qwen-extension.json';
+export const EXTENSIONS_CONFIG_FILENAME = 'sosh-extension.json';
 export const INSTALL_METADATA_FILENAME = '.qwen-extension-install.json';
 
 export interface Extension {

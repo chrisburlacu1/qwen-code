@@ -129,6 +129,9 @@ const PATTERNS: Array<[RegExp, TokenCount]> = [
   [/^qwen3-coder-.*$/, LIMITS['256k']],
   // Open-source Qwen3 2507 variants: 256K native
   [/^qwen3-.*-2507-.*$/, LIMITS['256k']],
+  // Qwen3 8B (Ollama common default/variant): 32k
+  [/^qwen3-8b.*$/, LIMITS['32k']],
+  [/^qwen3.*$/, LIMITS['32k']], // Fallback for other qwen3
 
   // Open-source long-context Qwen2.5-1M
   [/^qwen2\.5-1m.*$/, LIMITS['1m']],
@@ -228,11 +231,34 @@ const OUTPUT_PATTERNS: Array<[RegExp, TokenCount]> = [
  * @param type - The type of token limit ('input' for context window, 'output' for generation)
  * @returns The maximum number of tokens allowed for this model and type
  */
+const CUSTOM_LIMITS = new Map<Model, TokenCount>();
+const CUSTOM_OUTPUT_LIMITS = new Map<Model, TokenCount>();
+
+export function setCustomTokenLimit(
+  model: Model,
+  limit: TokenCount,
+  type: TokenLimitType = 'input',
+) {
+  const norm = normalize(model);
+  if (type === 'output') {
+    CUSTOM_OUTPUT_LIMITS.set(norm, limit);
+  } else {
+    CUSTOM_LIMITS.set(norm, limit);
+  }
+}
+
 export function tokenLimit(
   model: Model,
   type: TokenLimitType = 'input',
 ): TokenCount {
   const norm = normalize(model);
+
+  if (type === 'output' && CUSTOM_OUTPUT_LIMITS.has(norm)) {
+    return CUSTOM_OUTPUT_LIMITS.get(norm)!;
+  }
+  if (type === 'input' && CUSTOM_LIMITS.has(norm)) {
+    return CUSTOM_LIMITS.get(norm)!;
+  }
 
   // Choose the appropriate patterns based on token type
   const patterns = type === 'output' ? OUTPUT_PATTERNS : PATTERNS;

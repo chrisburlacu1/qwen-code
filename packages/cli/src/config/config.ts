@@ -21,6 +21,7 @@ import {
   InputFormat,
   OutputFormat,
   SessionService,
+  setCustomTokenLimit,
   type ResumedSessionData,
   type FileFilteringOptions,
   type MCPServerConfig,
@@ -637,8 +638,14 @@ export async function loadCliConfig(
 
   const ideMode = settings.ide?.enabled ?? false;
 
+   
+
   const folderTrust = settings.security?.folderTrust?.enabled ?? false;
   const trustedFolder = isWorkspaceTrusted(settings)?.isTrusted ?? true;
+
+  if (settings.model?.contextWindow && settings.model?.name) {
+    setCustomTokenLimit(settings.model.name, settings.model.contextWindow);
+  }
 
   const allExtensions = annotateActiveExtensions(
     extensions,

@@ -117,6 +117,9 @@ export const useGeminiStream = (
   const [thought, setThought] = useState<ThoughtSummary | null>(null);
   const [pendingHistoryItem, pendingHistoryItemRef, setPendingHistoryItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
+  const [lastPromptTokenCount, setLastPromptTokenCount] = useState<
+    number | undefined
+  >(undefined);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
   const { startNewPrompt, getPromptCount } = useSessionStats();
   const storage = config.storage;
@@ -588,6 +591,9 @@ export const useGeminiStream = (
   const handleFinishedEvent = useCallback(
     (event: ServerGeminiFinishedEvent, userMessageTimestamp: number) => {
       const finishReason = event.value.reason;
+      if (event.value.usageMetadata?.promptTokenCount) {
+        setLastPromptTokenCount(event.value.usageMetadata.promptTokenCount);
+      }
       if (!finishReason) {
         return;
       }
@@ -1262,5 +1268,6 @@ export const useGeminiStream = (
     handleApprovalModeChange,
     activePtyId,
     loopDetectionConfirmationRequest,
+    lastPromptTokenCount,
   };
 };

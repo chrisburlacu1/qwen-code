@@ -729,7 +729,7 @@ describe('extension tests', () => {
       );
     });
 
-    it('should throw an error and cleanup if qwen-extension.json is missing', async () => {
+    it('should throw an error and cleanup if sosh-extension.json is missing', async () => {
       const sourceExtDir = path.join(tempHomeDir, 'bad-extension');
       fs.mkdirSync(sourceExtDir, { recursive: true });
       const configPath = path.join(sourceExtDir, EXTENSIONS_CONFIG_FILENAME);
@@ -745,7 +745,7 @@ describe('extension tests', () => {
       expect(fs.existsSync(targetExtDir)).toBe(false);
     });
 
-    it('should throw an error for invalid JSON in qwen-extension.json', async () => {
+    it('should throw an error for invalid JSON in sosh-extension.json', async () => {
       const sourceExtDir = path.join(tempHomeDir, 'bad-json-ext');
       fs.mkdirSync(sourceExtDir, { recursive: true });
       const configPath = path.join(sourceExtDir, EXTENSIONS_CONFIG_FILENAME);
@@ -766,7 +766,7 @@ describe('extension tests', () => {
       );
     });
 
-    it('should throw an error for missing name in qwen-extension.json', async () => {
+    it('should throw an error for missing name in sosh-extension.json', async () => {
       const sourceExtDir = createExtension({
         extensionsDir: tempHomeDir,
         name: 'missing-name-ext',

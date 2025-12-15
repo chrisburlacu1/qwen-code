@@ -44,7 +44,7 @@ This is useful if you have an extension disabled at the top-level and only enabl
 
 ### Updating an extension
 
-For extensions installed from a local path or a git repository, you can explicitly update to the latest version (as reflected in the `qwen-extension.json` `version` field) with `qwen extensions update extension-name`.
+For extensions installed from a local path or a git repository, you can explicitly update to the latest version (as reflected in the `sosh-extension.json` `version` field) with `qwen extensions update extension-name`.
 
 You can update all extensions with:
 
@@ -80,13 +80,13 @@ qwen extensions link path/to/directory
 
 On startup, Qwen Code looks for extensions in `<home>/.qwen/extensions`
 
-Extensions exist as a directory that contains a `qwen-extension.json` file. For example:
+Extensions exist as a directory that contains a `sosh-extension.json` file. For example:
 
-`<home>/.qwen/extensions/my-extension/qwen-extension.json`
+`<home>/.qwen/extensions/my-extension/sosh-extension.json`
 
-### `qwen-extension.json`
+### `sosh-extension.json`
 
-The `qwen-extension.json` file contains the configuration for the extension. The file has the following structure:
+The `sosh-extension.json` file contains the configuration for the extension. The file has the following structure:
 
 ```json
 {
@@ -121,7 +121,7 @@ An extension named `gcp` with the following structure:
 
 ```
 .qwen/extensions/gcp/
-├── qwen-extension.json
+├── sosh-extension.json
 └── commands/
     ├── deploy.toml
     └── gcs/
@@ -147,7 +147,7 @@ For example, if both a user and the `gcp` extension define a `deploy` command:
 
 ## Variables
 
-Qwen Code extensions allow variable substitution in `qwen-extension.json`. This can be useful if e.g., you need the current directory to run an MCP server using `"cwd": "${extensionPath}${/}run.ts"`.
+Qwen Code extensions allow variable substitution in `sosh-extension.json`. This can be useful if e.g., you need the current directory to run an MCP server using `"cwd": "${extensionPath}${/}run.ts"`.
 
 **Supported variables:**
 

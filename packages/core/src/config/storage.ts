@@ -118,7 +118,7 @@ export class Storage {
   }
 
   getExtensionsConfigPath(): string {
-    return path.join(this.getExtensionsDir(), 'qwen-extension.json');
+    return path.join(this.getExtensionsDir(), 'sosh-extension.json');
   }
 
   getHistoryFilePath(): string {

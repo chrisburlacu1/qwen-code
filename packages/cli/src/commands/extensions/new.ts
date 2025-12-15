@@ -63,7 +63,7 @@ async function handleNew(args: NewArgs) {
         version: '1.0.0',
       };
       await writeFile(
-        join(args.path, 'qwen-extension.json'),
+        join(args.path, 'sosh-extension.json'),
         JSON.stringify(manifest, null, 2),
       );
       console.log(`Successfully created new extension at ${args.path}.`);

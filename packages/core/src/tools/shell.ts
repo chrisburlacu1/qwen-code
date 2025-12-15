@@ -246,7 +246,23 @@ export class ShellToolInvocation extends BaseToolInvocation<
       if (result.aborted) {
         llmContent = 'Command was cancelled by user before it could complete.';
         if (result.output.trim()) {
-          llmContent += ` Below is the output before it was cancelled:\n${result.output}`;
+          let output = result.output;
+          const truncateLines = this.config.getTruncateToolOutputLines();
+          if (
+            this.config.getEnableToolOutputTruncation() &&
+            output.split('\n').length > truncateLines
+          ) {
+            const lines = output.split('\n');
+            // Keep 20% head and 80% tail, aiming to capture errors at the end
+            const headLines = Math.floor(truncateLines * 0.2);
+            const tailLines = truncateLines - headLines;
+            output = [
+              ...lines.slice(0, headLines),
+              `\n... [Output truncated. Showing first ${headLines} and last ${tailLines} lines of ${lines.length} total lines] ...\n`,
+              ...lines.slice(-tailLines),
+            ].join('\n');
+          }
+          llmContent += ` Below is the output before it was cancelled:\n${output}`;
         } else {
           llmContent += ' There was no output before it was cancelled.';
         }
@@ -257,10 +273,26 @@ export class ShellToolInvocation extends BaseToolInvocation<
           ? result.error.message.replace(commandToExecute, this.params.command)
           : '(none)';
 
+        let output = result.output || '(empty)';
+        const truncateLines = this.config.getTruncateToolOutputLines();
+        if (
+          this.config.getEnableToolOutputTruncation() &&
+          output.split('\n').length > truncateLines
+        ) {
+          const lines = output.split('\n');
+          const headLines = Math.floor(truncateLines * 0.2);
+          const tailLines = truncateLines - headLines;
+          output = [
+            ...lines.slice(0, headLines),
+            `\n... [Output truncated. Showing first ${headLines} and last ${tailLines} lines of ${lines.length} total lines] ...\n`,
+            ...lines.slice(-tailLines),
+          ].join('\n');
+        }
+
         llmContent = [
           `Command: ${this.params.command}`,
           `Directory: ${this.params.directory || '(root)'}`,
-          `Output: ${result.output || '(empty)'}`,
+          `Output: ${output}`,
           `Error: ${finalError}`, // Use the cleaned error string.
           `Exit Code: ${result.exitCode ?? '(none)'}`,
           `Signal: ${result.signal ?? '(none)'}`,
