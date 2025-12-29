@@ -865,10 +865,19 @@ export async function loadCliConfig(
     );
   }
 
+  /* ENFORCED OFFLINE MODE */
+  const selectedAuthType: AuthType = AuthType.OLLAMA;
+  /*
   const selectedAuthType =
     (argv.authType as AuthType | undefined) ||
     settings.security?.auth?.selectedType;
+  */
 
+  /* ENFORCED OFFLINE MODE: Defaults for OLLAMA */
+  const apiKey = 'ollama'; // Placeholder
+  const baseUrl = 'http://localhost:11434/v1';
+  const resolvedModel = argv.model || 'qwen3:8b'; // Default to a reasonable Qwen model if not specified
+  /*
   const apiKey =
     (selectedAuthType === AuthType.USE_OPENAI
       ? argv.openaiApiKey ||
@@ -889,6 +898,7 @@ export async function loadCliConfig(
         settings.model?.name
       : '') ||
     '';
+  */
 
   const sandboxConfig = await loadSandboxConfig(settings, argv);
   const screenReader =

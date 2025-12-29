@@ -28,7 +28,6 @@ import { QwenSessionUpdateHandler } from './qwenSessionUpdateHandler.js';
 import { authMethod } from '../types/acpTypes.js';
 import { extractModelInfoFromNewSessionResult } from '../utils/acpModelInfo.js';
 import { isAuthenticationRequiredError } from '../utils/authErrors.js';
-import { handleAuthenticateUpdate } from '../utils/authNotificationHandler.js';
 
 export type { ChatMessage, PlanEntry, ToolCallUpdateData };
 
@@ -147,11 +146,15 @@ export class QwenAgentManager {
     };
 
     this.connection.onAuthenticateUpdate = (
-      data: AuthenticateUpdateNotification,
+      _data: AuthenticateUpdateNotification,
     ) => {
       try {
         // Handle authentication update notifications by showing VS Code notification
-        handleAuthenticateUpdate(data);
+        // OFFLINE MODE: Suppress auth notifications
+        console.log(
+          '[QwenAgentManager] Suppressed onAuthenticateUpdate notification (Offline Mode)',
+        );
+        // handleAuthenticateUpdate(data);
       } catch (err) {
         console.warn(
           '[QwenAgentManager] onAuthenticateUpdate callback error:',

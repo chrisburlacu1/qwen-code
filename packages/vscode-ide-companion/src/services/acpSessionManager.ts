@@ -161,20 +161,21 @@ export class AcpSessionManager {
   ): Promise<AcpResponse> {
     const authMethodId = methodId || 'default';
     console.log(
-      '[ACP] Sending authenticate request with methodId:',
+      '[ACP] Authenticate called (OFFLINE MODE): returning success immediately for methodId:',
       authMethodId,
     );
-    const response = await this.sendRequest<AcpResponse>(
-      AGENT_METHODS.authenticate,
-      {
-        methodId: authMethodId,
+
+    // OFFLINE MODE: Mock successful response without sending request to CLI
+    const mockResponse: AcpResponse = {
+      jsonrpc: JSONRPC_VERSION,
+      id: nextRequestId.value++,
+      result: {
+        status: 'authenticated',
+        user: { name: 'Offline User', id: 'offline' },
       },
-      child,
-      pendingRequests,
-      nextRequestId,
-    );
-    console.log('[ACP] Authenticate successful', response);
-    return response;
+    };
+
+    return mockResponse;
   }
 
   /**

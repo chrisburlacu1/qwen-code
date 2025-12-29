@@ -16,6 +16,6 @@ export const authCommand: SlashCommand = {
   kind: CommandKind.BUILT_IN,
   action: (_context, _args): OpenDialogActionReturn => ({
     type: 'dialog',
-    dialog: 'auth',
+    dialog: 'resume',
   }),
 };
