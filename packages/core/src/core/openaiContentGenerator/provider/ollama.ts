@@ -13,6 +13,7 @@ import {
   DEFAULT_OLLAMA_BASE_URL,
 } from '../constants.js';
 import type { OpenAICompatibleProvider } from './types.js';
+import type { GenerateContentConfig } from '@google/genai';
 
 /**
  * Provider for Ollama (local LLM inference)
@@ -92,6 +93,11 @@ export class OllamaOpenAICompatibleProvider
     // Ollama is fully OpenAI-compatible, no special modifications needed
     return {
       ...request,
+    };
+  }
+  getDefaultGenerationConfig(): GenerateContentConfig {
+    return {
+      topP: 0.95,
     };
   }
 }

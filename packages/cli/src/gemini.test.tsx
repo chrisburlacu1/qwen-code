@@ -381,8 +381,8 @@ describe('gemini.tsx main function kitty protocol', () => {
 
   beforeEach(() => {
     // Set no relaunch in tests since process spawning causing issues in tests
-    originalEnvNoRelaunch = process.env['GEMINI_CLI_NO_RELAUNCH'];
-    process.env['GEMINI_CLI_NO_RELAUNCH'] = 'true';
+    originalEnvNoRelaunch = process.env['QWEN_CODE_NO_RELAUNCH'];
+    process.env['QWEN_CODE_NO_RELAUNCH'] = 'true';
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(process.stdin as any).setRawMode) {
@@ -404,9 +404,9 @@ describe('gemini.tsx main function kitty protocol', () => {
   afterEach(() => {
     // Restore original env variables
     if (originalEnvNoRelaunch !== undefined) {
-      process.env['GEMINI_CLI_NO_RELAUNCH'] = originalEnvNoRelaunch;
+      process.env['QWEN_CODE_NO_RELAUNCH'] = originalEnvNoRelaunch;
     } else {
-      delete process.env['GEMINI_CLI_NO_RELAUNCH'];
+      delete process.env['QWEN_CODE_NO_RELAUNCH'];
     }
   });
 
@@ -463,6 +463,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       allowedMcpServerNames: undefined,
       allowedTools: undefined,
       experimentalAcp: undefined,
+      experimentalSkills: undefined,
       extensions: undefined,
       listExtensions: undefined,
       openaiLogging: undefined,
@@ -489,6 +490,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       maxSessionTurns: undefined,
       channel: undefined,
       contextWindow: undefined,
+      chatRecording: undefined,
     });
 
     await main();

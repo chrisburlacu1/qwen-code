@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config , AuthType } from '@qwen-code/qwen-code-core';
+import type { Config, AuthType } from '@qwen-code/qwen-code-core';
 import { useCallback, useEffect } from 'react';
 import type { LoadedSettings } from '../../config/settings.js';
 import { AuthState } from '../types.js';

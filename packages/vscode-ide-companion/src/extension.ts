@@ -15,6 +15,7 @@ import {
 } from '@qwen-code/qwen-code-core/src/ide/detect-ide.js';
 import { WebViewProvider } from './webview/WebViewProvider.js';
 import { registerNewCommands } from './commands/index.js';
+import { ReadonlyFileSystemProvider } from './services/readonlyFileSystemProvider.js';
 
 const INFO_MESSAGE_SHOWN_KEY = 'qwenCodeInfoMessageShown';
 export const DIFF_SCHEME = 'qwen-diff';
@@ -41,6 +42,19 @@ export async function activate(context: vscode.ExtensionContext) {
   log('Extension activated');
 
   log('Extension activated');
+
+  // Create and register readonly file system provider
+  // The provider registers itself as a singleton in the constructor
+  const readonlyProvider = new ReadonlyFileSystemProvider();
+  context.subscriptions.push(
+    vscode.workspace.registerFileSystemProvider(
+      ReadonlyFileSystemProvider.getScheme(),
+      readonlyProvider,
+      { isCaseSensitive: true, isReadonly: true },
+    ),
+    readonlyProvider,
+  );
+  log('Readonly file system provider registered');
 
   const diffContentProvider = new DiffContentProvider();
   const diffManager = new DiffManager(

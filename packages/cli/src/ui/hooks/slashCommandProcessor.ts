@@ -53,6 +53,7 @@ const SLASH_COMMANDS_SKIP_RECORDING = new Set([
   'clear',
   'reset',
   'new',
+  'resume',
 ]);
 
 interface SlashCommandProcessorActions {
@@ -63,9 +64,9 @@ interface SlashCommandProcessorActions {
   openModelDialog: () => void;
   openPermissionsDialog: () => void;
   openApprovalModeDialog: () => void;
+  openResumeDialog: () => void;
   quit: (messages: HistoryItem[]) => void;
   setDebugMessage: (message: string) => void;
-  toggleCorgiMode: () => void;
   dispatchExtensionStateUpdate: (action: ExtensionUpdateAction) => void;
   addConfirmUpdateExtensionRequest: (request: ConfirmationRequest) => void;
   openSubagentCreateDialog: () => void;
@@ -203,7 +204,6 @@ export const useSlashCommandProcessor = (
         setDebugMessage: actions.setDebugMessage,
         pendingItem,
         setPendingItem,
-        toggleCorgiMode: actions.toggleCorgiMode,
         toggleVimEnabled,
         setGeminiMdFileCount,
         reloadCommands,
@@ -410,6 +410,9 @@ export const useSlashCommandProcessor = (
                     case 'approval-mode':
                       actions.openApprovalModeDialog();
                       return { type: 'handled' };
+                    case 'resume':
+                      actions.openResumeDialog();
+                      return { type: 'handled' };
                     case 'help':
                       return { type: 'handled' };
                     default: {
@@ -506,6 +509,13 @@ export const useSlashCommandProcessor = (
                     result.originalInvocation.raw,
                     undefined,
                     true,
+                  );
+                }
+                case 'stream_messages': {
+                  // stream_messages is only used in ACP/Zed integration mode
+                  // and should not be returned in interactive UI mode
+                  throw new Error(
+                    'stream_messages result type is not supported in interactive mode',
                   );
                 }
                 default: {

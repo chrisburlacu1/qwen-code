@@ -169,6 +169,44 @@ describe('ShellTool', () => {
       });
       expect(invocation.getDescription()).not.toContain('[background]');
     });
+
+    describe('is_background parameter coercion', () => {
+      it('should accept string "true" as boolean true', () => {
+        const invocation = shellTool.build({
+          command: 'npm run dev',
+          is_background: 'true' as unknown as boolean,
+        });
+        expect(invocation).toBeDefined();
+        expect(invocation.getDescription()).toContain('[background]');
+      });
+
+      it('should accept string "false" as boolean false', () => {
+        const invocation = shellTool.build({
+          command: 'npm run build',
+          is_background: 'false' as unknown as boolean,
+        });
+        expect(invocation).toBeDefined();
+        expect(invocation.getDescription()).not.toContain('[background]');
+      });
+
+      it('should accept string "True" as boolean true', () => {
+        const invocation = shellTool.build({
+          command: 'npm run dev',
+          is_background: 'True' as unknown as boolean,
+        });
+        expect(invocation).toBeDefined();
+        expect(invocation.getDescription()).toContain('[background]');
+      });
+
+      it('should accept string "False" as boolean false', () => {
+        const invocation = shellTool.build({
+          command: 'npm run build',
+          is_background: 'False' as unknown as boolean,
+        });
+        expect(invocation).toBeDefined();
+        expect(invocation.getDescription()).not.toContain('[background]');
+      });
+    });
   });
 
   describe('execute', () => {
@@ -608,6 +646,36 @@ describe('ShellTool', () => {
         );
       });
 
+      it('should handle git commit with combined short flags like -am', async () => {
+        const command = 'git commit -am "Add feature"';
+        const invocation = shellTool.build({ command, is_background: false });
+        const promise = invocation.execute(mockAbortSignal);
+
+        resolveExecutionPromise({
+          rawOutput: Buffer.from(''),
+          output: '',
+          exitCode: 0,
+          signal: null,
+          error: null,
+          aborted: false,
+          pid: 12345,
+          executionMethod: 'child_process',
+        });
+
+        await promise;
+
+        expect(mockShellExecutionService).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Co-authored-by: Qwen-Coder <qwen-coder@alibabacloud.com>',
+          ),
+          expect.any(String),
+          expect.any(Function),
+          mockAbortSignal,
+          false,
+          {},
+        );
+      });
+
       it('should not modify non-git commands', async () => {
         const command = 'npm install';
         const invocation = shellTool.build({ command, is_background: false });
@@ -686,6 +754,69 @@ describe('ShellTool', () => {
 
         expect(mockShellExecutionService).toHaveBeenCalledWith(
           expect.stringContaining('git commit'),
+          expect.any(String),
+          expect.any(Function),
+          mockAbortSignal,
+          false,
+          {},
+        );
+      });
+
+      it('should add co-author when git commit is prefixed with cd command', async () => {
+        const command = 'cd /tmp/test && git commit -m "Test commit"';
+        const invocation = shellTool.build({ command, is_background: false });
+        const promise = invocation.execute(mockAbortSignal);
+
+        resolveExecutionPromise({
+          rawOutput: Buffer.from(''),
+          output: '',
+          exitCode: 0,
+          signal: null,
+          error: null,
+          aborted: false,
+          pid: 12345,
+          executionMethod: 'child_process',
+        });
+
+        await promise;
+
+        expect(mockShellExecutionService).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Co-authored-by: Qwen-Coder <qwen-coder@alibabacloud.com>',
+          ),
+          expect.any(String),
+          expect.any(Function),
+          mockAbortSignal,
+          false,
+          {},
+        );
+      });
+
+      it('should add co-author to git commit with multi-line message', async () => {
+        const command = `git commit -m "Fix bug
+
+This is a detailed description
+spanning multiple lines"`;
+        const invocation = shellTool.build({ command, is_background: false });
+        const promise = invocation.execute(mockAbortSignal);
+
+        resolveExecutionPromise({
+          rawOutput: Buffer.from(''),
+          output: '',
+          exitCode: 0,
+          signal: null,
+          error: null,
+          aborted: false,
+          pid: 12345,
+          executionMethod: 'child_process',
+        });
+
+        await promise;
+
+        expect(mockShellExecutionService).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Co-authored-by: Qwen-Coder <qwen-coder@alibabacloud.com>',
+          ),
           expect.any(String),
           expect.any(Function),
           mockAbortSignal,

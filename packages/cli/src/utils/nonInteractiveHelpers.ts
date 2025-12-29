@@ -24,9 +24,8 @@ import type {
   PermissionMode,
   CLISystemMessage,
 } from '../nonInteractive/types.js';
-import { CommandService } from '../services/CommandService.js';
-import { BuiltinCommandLoader } from '../services/BuiltinCommandLoader.js';
 import type { JsonOutputAdapterInterface } from '../nonInteractive/io/BaseJsonOutputAdapter.js';
+import { getAvailableCommands } from '../nonInteractiveCliCommands.js';
 
 /**
  * Normalizes various part list formats into a consistent Part[] array.
@@ -153,21 +152,24 @@ export function extractUsageFromGeminiClient(
  * Load slash command names using CommandService
  *
  * @param config - Config instance
+ * @param allowedBuiltinCommandNames - Optional array of allowed built-in command names.
+ *   If not provided, uses the default from getAvailableCommands.
  * @returns Promise resolving to array of slash command names
  */
-async function loadSlashCommandNames(config: Config): Promise<string[]> {
+async function loadSlashCommandNames(
+  config: Config,
+  allowedBuiltinCommandNames?: string[],
+): Promise<string[]> {
   const controller = new AbortController();
   try {
-    const service = await CommandService.create(
-      [new BuiltinCommandLoader(config)],
+    const commands = await getAvailableCommands(
+      config,
       controller.signal,
+      allowedBuiltinCommandNames,
     );
-    const names = new Set<string>();
-    const commands = service.getCommands();
-    for (const command of commands) {
-      names.add(command.name);
-    }
-    return Array.from(names).sort();
+
+    // Extract command names and sort
+    return commands.map((cmd) => cmd.name).sort();
   } catch (error) {
     if (config.getDebugMode()) {
       console.error(
@@ -196,12 +198,15 @@ async function loadSlashCommandNames(config: Config): Promise<string[]> {
  * @param config - Config instance
  * @param sessionId - Session identifier
  * @param permissionMode - Current permission/approval mode
+ * @param allowedBuiltinCommandNames - Optional array of allowed built-in command names.
+ *   If not provided, defaults to empty array (only file commands will be included).
  * @returns Promise resolving to CLISystemMessage
  */
 export async function buildSystemMessage(
   config: Config,
   sessionId: string,
   permissionMode: PermissionMode,
+  allowedBuiltinCommandNames?: string[],
 ): Promise<CLISystemMessage> {
   const toolRegistry = config.getToolRegistry();
   const tools = toolRegistry ? toolRegistry.getAllToolNames() : [];
@@ -214,8 +219,11 @@ export async function buildSystemMessage(
       }))
     : [];
 
-  // Load slash commands
-  const slashCommands = await loadSlashCommandNames(config);
+  // Load slash commands with filtering based on allowed built-in commands
+  const slashCommands = await loadSlashCommandNames(
+    config,
+    allowedBuiltinCommandNames,
+  );
 
   // Load subagent names from config
   let agentNames: string[] = [];

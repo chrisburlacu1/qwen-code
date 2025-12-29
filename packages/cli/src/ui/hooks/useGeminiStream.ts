@@ -24,7 +24,6 @@ import {
   MessageSenderType,
   GitService,
   UnauthorizedError,
-  DEFAULT_GEMINI_FLASH_MODEL,
   ApprovalMode,
   parseAndFormatApiError,
   promptIdContext,
@@ -488,10 +487,15 @@ export const useGeminiStream = (
         return currentThoughtBuffer;
       }
 
-      const newThoughtBuffer = currentThoughtBuffer + thoughtText;
+      let newThoughtBuffer = currentThoughtBuffer + thoughtText;
+
+      const pendingType = pendingHistoryItemRef.current?.type;
+      const isPendingThought =
+        pendingType === 'gemini_thought' ||
+        pendingType === 'gemini_thought_content';
 
       // If we're not already showing a thought, start a new one
-      if (pendingHistoryItemRef.current?.type !== 'gemini_thought') {
+      if (!isPendingThought) {
         // If there's a pending non-thought item, finalize it first
         if (pendingHistoryItemRef.current) {
           addItem(pendingHistoryItemRef.current, userMessageTimestamp);
@@ -499,11 +503,37 @@ export const useGeminiStream = (
         setPendingHistoryItem({ type: 'gemini_thought', text: '' });
       }
 
-      // Update the existing thought message with accumulated content
-      setPendingHistoryItem({
-        type: 'gemini_thought',
-        text: newThoughtBuffer,
-      });
+      // Split large thought messages for better rendering performance (same rationale
+      // as regular content streaming). This helps avoid terminal flicker caused by
+      // constantly re-rendering an ever-growing "pending" block.
+      const splitPoint = findLastSafeSplitPoint(newThoughtBuffer);
+      const nextPendingType: 'gemini_thought' | 'gemini_thought_content' =
+        isPendingThought && pendingType === 'gemini_thought_content'
+          ? 'gemini_thought_content'
+          : 'gemini_thought';
+
+      if (splitPoint === newThoughtBuffer.length) {
+        // Update the existing thought message with accumulated content
+        setPendingHistoryItem({
+          type: nextPendingType,
+          text: newThoughtBuffer,
+        });
+      } else {
+        const beforeText = newThoughtBuffer.substring(0, splitPoint);
+        const afterText = newThoughtBuffer.substring(splitPoint);
+        addItem(
+          {
+            type: nextPendingType,
+            text: beforeText,
+          },
+          userMessageTimestamp,
+        );
+        setPendingHistoryItem({
+          type: 'gemini_thought_content',
+          text: afterText,
+        });
+        newThoughtBuffer = afterText;
+      }
 
       // Also update the thought state for the loading indicator
       mergeThought(eventValue);
@@ -561,9 +591,6 @@ export const useGeminiStream = (
           text: parseAndFormatApiError(
             eventValue.error,
             config.getContentGeneratorConfig()?.authType,
-            undefined,
-            config.getModel(),
-            DEFAULT_GEMINI_FLASH_MODEL,
           ),
         },
         userMessageTimestamp,
@@ -618,6 +645,9 @@ export const useGeminiStream = (
           'Response stopped due to image safety violations.',
         [FinishReason.UNEXPECTED_TOOL_CALL]:
           'Response stopped due to unexpected tool call.',
+        [FinishReason.IMAGE_PROHIBITED_CONTENT]:
+          'Response stopped due to image prohibited content.',
+        [FinishReason.NO_IMAGE]: 'Response stopped due to no image.',
       };
 
       const message = finishReasonMessages[finishReason];
@@ -734,11 +764,17 @@ export const useGeminiStream = (
       for await (const event of stream) {
         switch (event.type) {
           case ServerGeminiEventType.Thought:
-            thoughtBuffer = handleThoughtEvent(
-              event.value,
-              thoughtBuffer,
-              userMessageTimestamp,
-            );
+            // If the thought has a subject, it's a discrete status update rather than
+            // a streamed textual thought, so we update the thought state directly.
+            if (event.value.subject) {
+              setThought(event.value);
+            } else {
+              thoughtBuffer = handleThoughtEvent(
+                event.value,
+                thoughtBuffer,
+                userMessageTimestamp,
+              );
+            }
             break;
           case ServerGeminiEventType.Content:
             geminiMessageBuffer = handleContentEvent(
@@ -809,6 +845,7 @@ export const useGeminiStream = (
       handleMaxSessionTurnsEvent,
       handleSessionTokenLimitExceededEvent,
       handleCitationEvent,
+      setThought,
     ],
   );
 
@@ -935,9 +972,6 @@ export const useGeminiStream = (
                 text: parseAndFormatApiError(
                   getErrorMessage(error) || 'Unknown error',
                   config.getContentGeneratorConfig()?.authType,
-                  undefined,
-                  config.getModel(),
-                  DEFAULT_GEMINI_FLASH_MODEL,
                 ),
               },
               userMessageTimestamp,

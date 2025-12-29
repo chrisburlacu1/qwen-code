@@ -11,7 +11,6 @@ import type {
 } from '@google/genai';
 import type { PipelineConfig } from './pipeline.js';
 import { ContentGenerationPipeline } from './pipeline.js';
-
 import { EnhancedErrorHandler } from './errorHandler.js';
 import { getDefaultTokenizer } from '../../utils/request-tokenizer/index.js';
 import type { ContentGeneratorConfig } from '../contentGenerator.js';
@@ -29,7 +28,6 @@ export class OpenAIContentGenerator implements ContentGenerator {
       cliConfig,
       provider,
       contentGeneratorConfig,
-
       errorHandler: new EnhancedErrorHandler(
         (error: unknown, request: GenerateContentParameters) =>
           this.shouldSuppressErrorLogging(error, request),
@@ -149,5 +147,9 @@ export class OpenAIContentGenerator implements ContentGenerator {
         `OpenAI API error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  useSummarizedThinking(): boolean {
+    return false;
   }
 }

@@ -24,6 +24,8 @@ export default tseslint.config(
       '.integration-tests/**',
       'packages/**/.integration-test/**',
       'dist/**',
+      'docs-site/.next/**',
+      'docs-site/out/**',
     ],
   },
   eslint.configs.recommended,
@@ -261,6 +263,27 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  // Settings for docs-site directory
+  {
+    files: ['docs-site/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      // Allow relaxed rules for documentation site
+      '@typescript-eslint/no-unused-vars': 'off',
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
     },
   },
 );

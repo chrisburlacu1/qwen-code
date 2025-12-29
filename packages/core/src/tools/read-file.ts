@@ -5,7 +5,7 @@
  */
 
 import path from 'node:path';
-import { makeRelative, shortenPath } from '../utils/paths.js';
+import { isSubpath, makeRelative, shortenPath } from '../utils/paths.js';
 import type { ToolInvocation, ToolLocation, ToolResult } from './tools.js';
 import { BaseDeclarativeTool, BaseToolInvocation, Kind } from './tools.js';
 import { ToolNames, ToolDisplayNames } from './tool-names.js';
@@ -158,15 +158,20 @@ export class ReadFileTool extends BaseDeclarativeTool<
 
     const workspaceContext = this.config.getWorkspaceContext();
     const projectTempDir = this.config.storage.getProjectTempDir();
+    const userSkillsDir = this.config.storage.getUserSkillsDir();
     const resolvedFilePath = path.resolve(filePath);
-    const resolvedProjectTempDir = path.resolve(projectTempDir);
-    const isWithinTempDir =
-      resolvedFilePath.startsWith(resolvedProjectTempDir + path.sep) ||
-      resolvedFilePath === resolvedProjectTempDir;
+    const isWithinTempDir = isSubpath(projectTempDir, resolvedFilePath);
+    const isWithinUserSkills = isSubpath(userSkillsDir, resolvedFilePath);
 
-    if (!workspaceContext.isPathWithinWorkspace(filePath) && !isWithinTempDir) {
+    if (
+      !workspaceContext.isPathWithinWorkspace(filePath) &&
+      !isWithinTempDir &&
+      !isWithinUserSkills
+    ) {
       const directories = workspaceContext.getDirectories();
-      return `File path must be within one of the workspace directories: ${directories.join(', ')} or within the project temp directory: ${projectTempDir}`;
+      return `File path must be within one of the workspace directories: ${directories.join(
+        ', ',
+      )} or within the project temp directory: ${projectTempDir}`;
     }
     if (params.offset !== undefined && params.offset < 0) {
       return 'Offset must be a non-negative number';

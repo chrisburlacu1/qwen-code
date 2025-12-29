@@ -2,7 +2,7 @@
   "name": "sosh-vscode-ide-companion",
   "displayName": "Sosh Companion",
   "description": "Enable Sosh with direct access to your VS Code workspace.",
-  "version": "0.4.3",
+  "version": "0.6.0",
   "publisher": "qwenlm",
   "icon": "assets/icon.png",
   "repository": {
@@ -11,7 +11,7 @@
     "directory": "packages/vscode-ide-companion"
   },
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.85.0"
   },
   "license": "LICENSE",
   "preview": true,
@@ -135,7 +135,7 @@
   "main": "./dist/extension.cjs",
   "type": "module",
   "scripts": {
-    "prepackage": "npm run generate:notices && npm run check-types && npm run lint && npm run build:prod",
+    "prepackage": "node ./scripts/prepackage.js",
     "build": "npm run build:dev",
     "build:dev": "npm run check-types && npm run lint && node esbuild.js",
     "build:prod": "node esbuild.js --production",
@@ -159,7 +159,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/semver": "^7.7.1",
-    "@types/vscode": "^1.99.0",
+    "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "@vscode/vsce": "^3.6.0",
@@ -175,8 +175,9 @@
   },
   "dependencies": {
     "semver": "^7.7.2",
-    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "cors": "^2.8.5",
+    "@hono/node-server": "^1.2.0",
     "express": "^5.1.0",
     "markdown-it": "^14.1.0",
     "react": "^19.1.0",

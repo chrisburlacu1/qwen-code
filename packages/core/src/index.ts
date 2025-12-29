@@ -24,11 +24,7 @@ export * from './core/nonInteractiveToolExecutor.js';
 
 export * from './fallback/types.js';
 
-export * from './code_assist/codeAssist.js';
-export * from './code_assist/oauth2.js';
 export * from './qwen/qwenOAuth2.js';
-export * from './code_assist/server.js';
-export * from './code_assist/types.js';
 
 // Export utilities
 export * from './utils/paths.js';
@@ -85,6 +81,9 @@ export * from './tools/tool-registry.js';
 // Export subagents (Phase 1)
 export * from './subagents/index.js';
 
+// Export skills
+export * from './skills/index.js';
+
 // Export prompt logic
 export * from './prompts/mcp-prompts.js';
 
@@ -106,6 +105,7 @@ export * from './tools/mcp-client-manager.js';
 export * from './tools/mcp-tool.js';
 export * from './tools/sdk-control-client-transport.js';
 export * from './tools/task.js';
+export * from './tools/skill.js';
 export * from './tools/todoWrite.js';
 export * from './tools/exitPlanMode.js';
 

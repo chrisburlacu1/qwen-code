@@ -12,7 +12,6 @@ import * as path from 'node:path';
 import { setGeminiMdFilename as mockSetGeminiMdFilename } from '../tools/memoryTool.js';
 
 import type { ContentGeneratorConfig } from '../core/contentGenerator.js';
-import { DEFAULT_DASHSCOPE_BASE_URL } from '../core/openaiContentGenerator/constants.js';
 import {
   AuthType,
   createContentGeneratorConfig,
@@ -243,7 +242,7 @@ describe('Server Config (config.ts)', () => {
         authType,
         {
           model: MODEL,
-          baseUrl: DEFAULT_DASHSCOPE_BASE_URL,
+          baseUrl: undefined,
         },
       );
       // Verify that contentGeneratorConfig is updated
@@ -251,23 +250,6 @@ describe('Server Config (config.ts)', () => {
       expect(GeminiClient).toHaveBeenCalledWith(config);
       // Verify that fallback mode is reset
       expect(config.isInFallbackMode()).toBe(false);
-    });
-
-    it('should strip thoughts when switching from GenAI to Vertex', async () => {
-      const config = new Config(baseParams);
-
-      vi.mocked(createContentGeneratorConfig).mockImplementation(
-        (_: Config, authType: AuthType | undefined) =>
-          ({ authType }) as unknown as ContentGeneratorConfig,
-      );
-
-      await config.refreshAuth(AuthType.USE_GEMINI);
-
-      await config.refreshAuth(AuthType.LOGIN_WITH_GOOGLE);
-
-      expect(
-        config.getGeminiClient().stripThoughtsFromHistory,
-      ).toHaveBeenCalledWith();
     });
 
     it('should not strip thoughts when switching from Vertex to GenAI', async () => {

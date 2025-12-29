@@ -12,12 +12,8 @@ import type {
   GenerateContentParameters,
   GenerateContentResponse,
 } from '@google/genai';
-import { GoogleGenAI } from '@google/genai';
-import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
 import { DEFAULT_QWEN_MODEL } from '../config/models.js';
 import type { Config } from '../config/config.js';
-
-import type { UserTierId } from '../code_assist/types.js';
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -37,17 +33,16 @@ export interface ContentGenerator {
 
   embedContent(request: EmbedContentParameters): Promise<EmbedContentResponse>;
 
-  userTier?: UserTierId;
+  useSummarizedThinking(): boolean;
 }
 
 export enum AuthType {
-  LOGIN_WITH_GOOGLE = 'oauth-personal',
-  USE_GEMINI = 'gemini-api-key',
-  USE_VERTEX_AI = 'vertex-ai',
-  CLOUD_SHELL = 'cloud-shell',
   USE_OPENAI = 'openai',
   QWEN_OAUTH = 'qwen-oauth',
   OLLAMA = 'ollama',
+  USE_GEMINI = 'gemini',
+  USE_VERTEX_AI = 'vertex-ai',
+  USE_ANTHROPIC = 'anthropic',
 }
 
 export type ContentGeneratorConfig = {
@@ -58,12 +53,9 @@ export type ContentGeneratorConfig = {
   authType?: AuthType | undefined;
   enableOpenAILogging?: boolean;
   openAILoggingDir?: string;
-  // Timeout configuration in milliseconds
-  timeout?: number;
-  // Maximum retries for failed requests
-  maxRetries?: number;
-  // Disable cache control for DashScope providers
-  disableCacheControl?: boolean;
+  timeout?: number; // Timeout configuration in milliseconds
+  maxRetries?: number; // Maximum retries for failed requests
+  disableCacheControl?: boolean; // Disable cache control for DashScope providers
   samplingParams?: {
     top_p?: number;
     top_k?: number;
@@ -73,8 +65,16 @@ export type ContentGeneratorConfig = {
     temperature?: number;
     max_tokens?: number;
   };
+  reasoning?:
+    | false
+    | {
+        effort?: 'low' | 'medium' | 'high';
+        budget_tokens?: number;
+      };
   proxy?: string | undefined;
   userAgent?: string;
+  // Schema compliance mode for tool definitions
+  schemaCompliance?: 'auto' | 'openapi_30';
 };
 
 export function createContentGeneratorConfig(
@@ -82,7 +82,7 @@ export function createContentGeneratorConfig(
   authType: AuthType | undefined,
   generationConfig?: Partial<ContentGeneratorConfig>,
 ): ContentGeneratorConfig {
-  const newContentGeneratorConfig: Partial<ContentGeneratorConfig> = {
+  let newContentGeneratorConfig: Partial<ContentGeneratorConfig> = {
     ...(generationConfig || {}),
     authType,
     proxy: config?.getProxy(),
@@ -99,8 +99,16 @@ export function createContentGeneratorConfig(
   }
 
   if (authType === AuthType.USE_OPENAI) {
+    newContentGeneratorConfig = {
+      ...newContentGeneratorConfig,
+      apiKey: newContentGeneratorConfig.apiKey || process.env['OPENAI_API_KEY'],
+      baseUrl:
+        newContentGeneratorConfig.baseUrl || process.env['OPENAI_BASE_URL'],
+      model: newContentGeneratorConfig.model || process.env['OPENAI_MODEL'],
+    };
+
     if (!newContentGeneratorConfig.apiKey) {
-      throw new Error('OpenAI API key is required');
+      throw new Error('OPENAI_API_KEY environment variable not found.');
     }
 
     return {
@@ -131,40 +139,6 @@ export async function createContentGenerator(
   gcConfig: Config,
   isInitialAuth?: boolean,
 ): Promise<ContentGenerator> {
-  const version = process.env['CLI_VERSION'] || process.version;
-  const userAgent = `QwenCode/${version} (${process.platform}; ${process.arch})`;
-  const baseHeaders: Record<string, string> = {
-    'User-Agent': userAgent,
-  };
-
-  if (
-    config.authType === AuthType.LOGIN_WITH_GOOGLE ||
-    config.authType === AuthType.CLOUD_SHELL
-  ) {
-    const httpOptions = { headers: baseHeaders };
-    return await createCodeAssistContentGenerator(
-      httpOptions,
-      config.authType,
-      gcConfig,
-    );
-  }
-
-  if (
-    config.authType === AuthType.USE_GEMINI ||
-    config.authType === AuthType.USE_VERTEX_AI
-  ) {
-    const headers: Record<string, string> = { ...baseHeaders };
-    // Usage statistics check removed
-    const httpOptions = { headers };
-
-    const googleGenAI = new GoogleGenAI({
-      apiKey: config.apiKey === '' ? undefined : config.apiKey,
-      vertexai: config.vertexai,
-      httpOptions,
-    });
-    return googleGenAI.models;
-  }
-
   if (
     config.authType === AuthType.USE_OPENAI ||
     config.authType === AuthType.OLLAMA
@@ -201,12 +175,37 @@ export async function createContentGenerator(
       );
 
       // Create the content generator with dynamic token management
-      return new QwenContentGenerator(qwenClient, config, gcConfig);
+      const generator = new QwenContentGenerator(qwenClient, config, gcConfig);
+      return generator;
     } catch (error) {
       throw new Error(
         `${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  if (config.authType === AuthType.USE_ANTHROPIC) {
+    if (!config.apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable not found.');
+    }
+
+    const { createAnthropicContentGenerator } = await import(
+      './anthropicContentGenerator/index.js'
+    );
+
+    const generator = createAnthropicContentGenerator(config, gcConfig);
+    return generator;
+  }
+
+  if (
+    config.authType === AuthType.USE_GEMINI ||
+    config.authType === AuthType.USE_VERTEX_AI
+  ) {
+    const { createGeminiContentGenerator } = await import(
+      './geminiContentGenerator/index.js'
+    );
+    const generator = createGeminiContentGenerator(config, gcConfig);
+    return generator;
   }
 
   throw new Error(

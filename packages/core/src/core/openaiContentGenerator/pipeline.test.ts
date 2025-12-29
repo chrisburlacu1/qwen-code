@@ -15,7 +15,6 @@ import { OpenAIContentConverter } from './converter.js';
 import type { Config } from '../../config/config.js';
 import type { ContentGeneratorConfig, AuthType } from '../contentGenerator.js';
 import type { OpenAICompatibleProvider } from './provider/index.js';
-
 import type { ErrorHandler } from './errorHandler.js';
 
 // Mock dependencies
@@ -28,7 +27,6 @@ describe('ContentGenerationPipeline', () => {
   let mockProvider: OpenAICompatibleProvider;
   let mockClient: OpenAI;
   let mockConverter: OpenAIContentConverter;
-
   let mockErrorHandler: ErrorHandler;
   let mockContentGeneratorConfig: ContentGeneratorConfig;
   let mockCliConfig: Config;
@@ -60,6 +58,7 @@ describe('ContentGenerationPipeline', () => {
       buildClient: vi.fn().mockReturnValue(mockClient),
       buildRequest: vi.fn().mockImplementation((req) => req),
       buildHeaders: vi.fn().mockReturnValue({}),
+      getDefaultGenerationConfig: vi.fn().mockReturnValue({}),
     };
 
     // Mock error handler
@@ -91,7 +90,6 @@ describe('ContentGenerationPipeline', () => {
       cliConfig: mockCliConfig,
       provider: mockProvider,
       contentGeneratorConfig: mockContentGeneratorConfig,
-
       errorHandler: mockErrorHandler,
     };
 
@@ -101,7 +99,10 @@ describe('ContentGenerationPipeline', () => {
   describe('constructor', () => {
     it('should initialize with correct configuration', () => {
       expect(mockProvider.buildClient).toHaveBeenCalled();
-      expect(OpenAIContentConverter).toHaveBeenCalledWith('test-model');
+      expect(OpenAIContentConverter).toHaveBeenCalledWith(
+        'test-model',
+        undefined,
+      );
     });
   });
 
@@ -447,7 +448,6 @@ describe('ContentGenerationPipeline', () => {
 
       expect(results).toHaveLength(0); // No results due to error
       expect(mockConverter.resetStreamingToolCalls).toHaveBeenCalledTimes(2); // Once at start, once on error
-
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(
         testError,
         expect.any(Object),
@@ -1227,8 +1227,6 @@ describe('ContentGenerationPipeline', () => {
       // Should only yield the final response (empty ones are filtered)
       expect(responses).toHaveLength(1);
       expect(responses[0]).toBe(finalGeminiResponse);
-
-      // Verify telemetry was called with ALL OpenAI chunks, including the filtered ones
     });
   });
 });
