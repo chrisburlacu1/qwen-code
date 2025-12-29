@@ -76,26 +76,11 @@ export class OllamaOpenAICompatibleProvider
     // Use a placeholder if not provided
     const effectiveApiKey = apiKey || 'ollama';
 
-    // For local Ollama connections, disable retries to prevent hanging
-    // Local servers either respond immediately or fail, retries just waste time
-    // Also use a shorter timeout for local connections to fail fast
-    const isLocalConnection =
-      baseUrl?.includes('localhost') ||
-      baseUrl?.includes('127.0.0.1') ||
-      baseUrl?.startsWith('http://localhost:') ||
-      baseUrl?.startsWith('http://127.0.0.1:');
-
-    const effectiveMaxRetries = isLocalConnection ? 0 : maxRetries;
-    // Use a shorter timeout for local connections (30 seconds instead of 120)
-    const effectiveTimeout = isLocalConnection
-      ? Math.min(timeout, 30000)
-      : timeout;
-
     return new OpenAI({
       apiKey: effectiveApiKey,
       baseURL: baseUrl,
-      timeout: effectiveTimeout,
-      maxRetries: effectiveMaxRetries,
+      timeout,
+      maxRetries,
       defaultHeaders,
     });
   }

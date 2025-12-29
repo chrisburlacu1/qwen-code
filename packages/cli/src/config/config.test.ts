@@ -543,6 +543,31 @@ describe('loadCliConfig', () => {
     expect(config.getIncludePartialMessages()).toBe(true);
   });
 
+  it('should set custom token limit when --context-window flag is present', async () => {
+    process.argv = ['node', 'script.js', '--context-window', '32768'];
+    const argv = await parseArguments({} as Settings);
+    const settings: Settings = { model: { name: 'test-model' } };
+
+    // We need to mock setCustomTokenLimit to verify it's called
+    const setCustomTokenLimitSpy = vi.spyOn(
+      ServerConfig,
+      'setCustomTokenLimit',
+    );
+
+    await loadCliConfig(
+      settings,
+      [],
+      new ExtensionEnablementManager(
+        ExtensionStorage.getUserExtensionsDir(),
+        argv.extensions,
+      ),
+      argv,
+    );
+
+    expect(setCustomTokenLimitSpy).toHaveBeenCalledWith('test-model', 32768);
+    setCustomTokenLimitSpy.mockRestore();
+  });
+
   it('should set showMemoryUsage to true when --show-memory-usage flag is present', async () => {
     process.argv = ['node', 'script.js', '--show-memory-usage'];
     const argv = await parseArguments({} as Settings);

@@ -116,10 +116,22 @@ Add to `~/.qwen/settings.json`:
       "model": "qwen3-coder",
       "temperature": 0.1,
       "maxTokens": 8192
-    }
+    },
+    "contextWindow": 32768
   }
 }
 ```
+
+### 🚩 Using CLI Flags
+
+You can also override the context window directly from the command line:
+
+```bash
+qwen --context-window 32768
+```
+
+> [!TIP]
+> Setting the context window correctly for your local model (e.g., 32768 for `qwen3:8b`) prevents the model from becoming confused when the context gets too large for its training.
 
 ## 🎮 Usage
 

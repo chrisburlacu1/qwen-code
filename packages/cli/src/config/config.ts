@@ -138,6 +138,7 @@ export interface CliArgs {
   excludeTools: string[] | undefined;
   authType: string | undefined;
   channel: string | undefined;
+  contextWindow: number | undefined;
 }
 
 function normalizeOutputFormat(
@@ -451,6 +452,10 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
           choices: [AuthType.USE_OPENAI, AuthType.QWEN_OAUTH, AuthType.OLLAMA],
           description: 'Authentication type',
         })
+        .option('context-window', {
+          type: 'number',
+          description: 'Override the context window token limit',
+        })
         .deprecateOption(
           'show-memory-usage',
           'Use the "ui.showMemoryUsage" setting in settings.json instead. This flag will be removed in a future version.',
@@ -638,13 +643,13 @@ export async function loadCliConfig(
 
   const ideMode = settings.ide?.enabled ?? false;
 
-   
-
   const folderTrust = settings.security?.folderTrust?.enabled ?? false;
   const trustedFolder = isWorkspaceTrusted(settings)?.isTrusted ?? true;
 
-  if (settings.model?.contextWindow && settings.model?.name) {
-    setCustomTokenLimit(settings.model.name, settings.model.contextWindow);
+  const contextWindow = argv.contextWindow ?? settings.model?.contextWindow;
+
+  if (contextWindow && settings.model?.name) {
+    setCustomTokenLimit(settings.model.name, contextWindow);
   }
 
   const allExtensions = annotateActiveExtensions(

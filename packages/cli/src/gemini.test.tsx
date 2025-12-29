@@ -47,7 +47,9 @@ vi.mock('./config/config.js', () => ({
     getQuestion: vi.fn(() => ''),
     isInteractive: () => false,
   } as unknown as Config),
-  parseArguments: vi.fn().mockResolvedValue({}),
+  parseArguments: vi.fn().mockResolvedValue({
+    contextWindow: undefined,
+  }),
   isDebugMode: vi.fn(() => false),
 }));
 
@@ -155,7 +157,7 @@ describe('gemini.tsx main function', () => {
         getMcpServers: () => ({}),
         initialize: vi.fn(),
         getIdeMode: () => false,
-
+        getExperimentalZedIntegration: () => false,
         getScreenReader: () => false,
         getGeminiMdFileCount: () => 0,
         getProjectRoot: () => '/',
@@ -486,6 +488,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       authType: undefined,
       maxSessionTurns: undefined,
       channel: undefined,
+      contextWindow: undefined,
     });
 
     await main();

@@ -88,3 +88,27 @@ The IDE Companion is a VS Code extension that allows the CLI to see your open fi
 
 - **"Ollama not reachable"**: Ensure `ollama serve` is running and `http://localhost:11434/v1` is accessible.
 - **"IDE Companion not found"**: Ensure the extension is installed in VS Code and you have a workspace/folder open in VS Code. The extension only activates when a folder is open.
+
+## Advanced Configuration
+
+### Configuring Model Context
+
+If you are using a local model with a specific context window size, you can configure it to ensure optimal performance.
+
+#### Via Settings (`~/.qwen/settings.json`):
+
+```json
+{
+  "model": {
+    "contextWindow": 32768
+  }
+}
+```
+
+#### Via CLI:
+
+```bash
+sosh --context-window 32768
+```
+
+You can view your current context usage in the status bar at the bottom of the CLI.

@@ -1,5 +1,5 @@
 {
-  "name": "sosh",
+  "name": "@qwen-code/qwen-code-ollama",
   "version": "0.5.0",
   "engines": {
     "node": ">=20.0.0"

@@ -105,6 +105,7 @@ interface MatchedSliceResult {
 const LINE_COMPARISON_PASSES: Array<(value: string) => string> = [
   (value) => value,
   (value) => value.trimEnd(),
+  (value) => value.trim(),
 ];
 
 function normalizeLineForComparison(value: string): string {
